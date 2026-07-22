@@ -11,9 +11,12 @@ class StockRecord:
 
     code: str
     name: str
+    market: str
     sector: str
     sub_sector: str
     priority: int
+    chain_group: str = ""
+    pool_type: str = "core"
     notes: str = ""
 
 

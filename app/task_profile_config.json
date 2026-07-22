@@ -1,0 +1,484 @@
+{
+  "scheduled_jobs": [
+    {
+      "id": "pre-open-check",
+      "label": "Pre-open Check",
+      "summary": "Overnight risk scan before the opening session.",
+      "hour": 9,
+      "minute": 15
+    },
+    {
+      "id": "morning-check",
+      "label": "Morning Check",
+      "summary": "Opening confirmation and early theme follow-through scan.",
+      "hour": 9,
+      "minute": 35
+    },
+    {
+      "id": "midday-check",
+      "label": "Midday Check",
+      "summary": "Breadth expansion and mid-session structure scan.",
+      "hour": 11,
+      "minute": 30
+    },
+    {
+      "id": "afternoon-review",
+      "label": "Afternoon Review",
+      "summary": "Late-session retention and close structure review.",
+      "hour": 14,
+      "minute": 45
+    }
+  ],
+  "task_display_groups": [
+    {
+      "key": "manual_preview",
+      "label": "Manual Preview",
+      "job_ids": [
+        "manual"
+      ]
+    },
+    {
+      "key": "scheduled_day_flow",
+      "label": "Scheduled Day Flow",
+      "job_ids": [
+        "pre-open-check",
+        "morning-check",
+        "midday-check",
+        "afternoon-review"
+      ]
+    }
+  ],
+  "task_overview_display": {
+    "heading": "Task Overview",
+    "display_groups_heading": "Display groups:",
+    "fields": [
+      {
+        "key": "scheduled_job_count",
+        "label": "Scheduled job count"
+      },
+      {
+        "key": "scheduled_jobs",
+        "label": "Scheduled jobs"
+      },
+      {
+        "key": "scheduled_job_labels",
+        "label": "Scheduled job labels"
+      },
+      {
+        "key": "scheduled_timings",
+        "label": "Scheduled timings"
+      },
+      {
+        "key": "result_summary_styles",
+        "label": "Result summary styles"
+      },
+      {
+        "key": "manual_preview_jobs",
+        "label": "Manual preview jobs"
+      },
+      {
+        "key": "scheduled_day_flow_jobs",
+        "label": "Scheduled day-flow jobs"
+      }
+    ]
+  },
+  "output_profiles_display": {
+    "heading": "Output profiles:",
+    "intent_label_prefix": "  intent: ",
+    "block_labels": {
+      "include_morning_report": "morning-report",
+      "include_market_focus_snapshot": "market-focus-snapshot",
+      "include_monitor_universe_observation": "universe-observation",
+      "include_intraday_digest": "intraday-digest",
+      "include_detailed_alerts": "detailed-alerts",
+      "include_evening_report": "evening-report",
+      "include_close_digest": "close-digest"
+    }
+  },
+  "view_templates": {
+    "manual_full_view": {
+      "label": "Manual Full View",
+      "summary": "Show the full local monitor output for manual end-to-end preview runs.",
+      "output_strategy": {
+        "include_morning_report": true,
+        "include_market_focus_snapshot": true,
+        "include_monitor_universe_observation": true,
+        "include_intraday_digest": true,
+        "include_detailed_alerts": true,
+        "include_evening_report": true,
+        "include_close_digest": true,
+        "include_latest_review": false
+      }
+    },
+    "opening_task_view": {
+      "label": "Opening Task View",
+      "summary": "Emphasize opening risk, theme confirmation, and early alert reading.",
+      "display_variant": "opening_focus",
+      "detailed_alert_style_variant": "opening_focus",
+      "output_strategy": {
+        "include_morning_report": true,
+        "include_market_focus_snapshot": true,
+        "include_monitor_universe_observation": true,
+        "include_intraday_digest": true,
+        "include_detailed_alerts": true,
+        "include_evening_report": false,
+        "include_close_digest": false,
+        "include_latest_review": false
+      }
+    },
+    "pre_open_view": {
+      "label": "Pre-open View",
+      "summary": "Keep the pre-open run focused on overnight risk and opening preparation.",
+      "display_variant": "opening_focus",
+      "output_strategy": {
+        "include_morning_report": true,
+        "include_market_focus_snapshot": true,
+        "include_monitor_universe_observation": true,
+        "include_intraday_digest": false,
+        "include_detailed_alerts": false,
+        "include_evening_report": false,
+        "include_close_digest": false,
+        "include_latest_review": false
+      }
+    },
+    "mid_session_task_view": {
+      "label": "Mid-session Task View",
+      "summary": "Balance breadth, market focus, and intraday alert expansion during the session.",
+      "display_variant": "mid_session_balanced",
+      "detailed_alert_style_variant": "mid_session_balanced",
+      "output_strategy": {
+        "include_morning_report": false,
+        "include_market_focus_snapshot": true,
+        "include_monitor_universe_observation": true,
+        "include_intraday_digest": true,
+        "include_detailed_alerts": true,
+        "include_evening_report": false,
+        "include_close_digest": false,
+        "include_latest_review": false
+      }
+    },
+    "close_review_task_view": {
+      "label": "Close Review View",
+      "summary": "Shift the review toward close retention, structure confirmation, and wrap-up output.",
+      "display_variant": "close_review",
+      "detailed_alert_style_variant": "close_review",
+      "output_strategy": {
+        "include_morning_report": false,
+        "include_market_focus_snapshot": true,
+        "include_monitor_universe_observation": true,
+        "include_intraday_digest": false,
+        "include_detailed_alerts": true,
+        "include_evening_report": true,
+        "include_close_digest": true,
+        "include_latest_review": false
+      }
+    }
+  },
+  "job_output_strategies": {
+    "manual": {
+      "view_template": "manual_full_view"
+    },
+    "pre-open-check": {
+      "view_template": "pre_open_view"
+    },
+    "morning-check": {
+      "view_template": "opening_task_view"
+    },
+    "midday-check": {
+      "view_template": "mid_session_task_view"
+    },
+    "afternoon-review": {
+      "view_template": "close_review_task_view"
+    }
+  },
+  "alert_type_bundles": {
+    "overnight_news_only": {
+      "label": "Overnight News Only",
+      "summary": "Use only overnight news-style alerts for pre-open risk reading.",
+      "items": [
+        "news_flash"
+      ]
+    },
+    "opening_theme_confirmation": {
+      "label": "Opening Theme Confirmation",
+      "summary": "Focus on early news and materials-theme confirmation during the open.",
+      "items": [
+        "news_flash",
+        "materials_focus"
+      ]
+    },
+    "mid_session_expansion": {
+      "label": "Mid-session Expansion",
+      "summary": "Track whether sector movement is broadening with supporting theme alerts.",
+      "items": [
+        "sector_move",
+        "materials_focus",
+        "news_flash"
+      ]
+    },
+    "mid_session_structure_focus": {
+      "label": "Mid-session Structure Focus",
+      "summary": "Keep attention on live sector movement and chain-level structure quality.",
+      "items": [
+        "sector_move",
+        "materials_focus"
+      ]
+    }
+  },
+  "chain_group_bundles": {
+    "full_monitor_chains": [
+      "光模块",
+      "服务器",
+      "设备",
+      "材料",
+      "气体",
+      "存储",
+      "封测"
+    ],
+    "overnight_news_impact": [
+      "光模块",
+      "服务器",
+      "设备",
+      "材料",
+      "气体"
+    ],
+    "opening_confirmation_chains": [
+      "材料",
+      "气体",
+      "设备"
+    ],
+    "mid_session_expansion_chains": [
+      "材料",
+      "气体",
+      "设备",
+      "存储",
+      "封测"
+    ],
+    "close_retention_chains": [
+      "材料",
+      "气体",
+      "设备"
+    ]
+  },
+  "chain_group_bundle_meta": {
+    "full_monitor_chains": {
+      "label": "Full Monitor Chains",
+      "summary": "Use the full AI and semiconductor chain set for end-to-end monitoring."
+    },
+    "overnight_news_impact": {
+      "label": "Overnight News Impact Chains",
+      "summary": "Focus on chains that usually react first to overnight disruption and policy news."
+    },
+    "opening_confirmation_chains": {
+      "label": "Opening Confirmation Chains",
+      "summary": "Prioritize materials, gases, and equipment during opening confirmation."
+    },
+    "mid_session_expansion_chains": {
+      "label": "Mid-session Expansion Chains",
+      "summary": "Use the wider expansion-sensitive chain mix during midday structure checks."
+    },
+    "close_retention_chains": {
+      "label": "Close Retention Chains",
+      "summary": "Keep late-session review focused on chains most useful for retention judgment."
+    }
+  },
+  "job_intent_strategies": {
+    "manual": {
+      "view_template": "manual_full_view",
+      "intraday_digest": {
+        "high_value_only": false,
+        "max_items": 3
+      },
+      "close_digest": {
+        "high_value_only": false,
+        "max_items": 5
+      },
+      "intent_label": "full-monitor",
+      "focus_tags": [
+        "full-cycle",
+        "structure",
+        "alerts"
+      ],
+      "preferred_chain_group_bundle": "full_monitor_chains",
+      "strategy_note": "Use the full local monitor flow when you want an end-to-end snapshot instead of one stage-only checkpoint.",
+      "console_title": "AI 半导体监控",
+      "console_subtitle": "全流程本地监控",
+      "result_summary_style": "full_monitor"
+    },
+    "pre-open-check": {
+      "view_template": "pre_open_view",
+      "intraday_digest": {
+        "high_value_only": true,
+        "max_items": 2,
+        "preferred_alert_type_bundle": "overnight_news_only"
+      },
+      "close_digest": {
+        "high_value_only": true,
+        "max_items": 1,
+        "preferred_alert_type_bundle": "overnight_news_only"
+      },
+      "intent_label": "pre-open-preparation-check",
+      "focus_tags": [
+        "overnight-news",
+        "pre-open-risk"
+      ],
+      "preferred_chain_group_bundle": "overnight_news_impact",
+      "strategy_note": "Bias toward overnight disruption and fresh news so the open starts with the clearest external risk scan.",
+      "console_title": "盘前检查",
+      "console_subtitle": "盘前准备与隔夜风险扫描",
+      "result_summary_style": "pre_open"
+    },
+    "morning-check": {
+      "intraday_digest": {
+        "high_value_only": true,
+        "max_items": 2,
+        "preferred_alert_type_bundle": "opening_theme_confirmation"
+      },
+      "close_digest": {
+        "high_value_only": true,
+        "max_items": 2,
+        "preferred_alert_type_bundle": "opening_theme_confirmation"
+      },
+      "intent_label": "opening-risk-and-theme-check",
+      "focus_tags": [
+        "open-confirmation",
+        "theme-follow-through"
+      ],
+      "view_template": "opening_task_view",
+      "preferred_chain_group_bundle": "opening_confirmation_chains",
+      "strategy_note": "Watch whether the opening move is being confirmed by theme leaders instead of reacting to noise from the first few minutes.",
+      "console_title": "开盘检查",
+      "console_subtitle": "开盘风险与题材确认",
+      "result_summary_style": "morning_check"
+    },
+    "midday-check": {
+      "view_template": "mid_session_task_view",
+      "intraday_digest": {
+        "high_value_only": false,
+        "max_items": 3,
+        "preferred_alert_type_bundle": "mid_session_expansion"
+      },
+      "close_digest": {
+        "high_value_only": false,
+        "max_items": 2,
+        "preferred_alert_type_bundle": "mid_session_structure_focus"
+      },
+      "intent_label": "mid-session-expansion-check",
+      "focus_tags": [
+        "breadth-expansion",
+        "mid-session-structure"
+      ],
+      "preferred_chain_group_bundle": "mid_session_expansion_chains",
+      "strategy_note": "Use midday to judge whether the main line is broadening from leaders into the wider chain or staying narrow.",
+      "console_title": "盘中检查",
+      "console_subtitle": "盘中扩散与广度检查",
+      "result_summary_style": "midday_check"
+    },
+    "afternoon-review": {
+      "view_template": "close_review_task_view",
+      "intraday_digest": {
+        "high_value_only": false,
+        "max_items": 3,
+        "preferred_alert_type_bundle": "mid_session_structure_focus"
+      },
+      "close_digest": {
+        "high_value_only": false,
+        "max_items": 4,
+        "preferred_alert_type_bundle": "mid_session_expansion"
+      },
+      "intent_label": "close-review-and-structure-check",
+      "focus_tags": [
+        "close-structure",
+        "theme-retention"
+      ],
+      "preferred_chain_group_bundle": "close_retention_chains",
+      "strategy_note": "Shift attention to what can still hold into the close so the next-day watchlist is based on retained structure, not intraday spikes.",
+      "console_title": "尾盘复盘",
+      "console_subtitle": "收盘结构与题材复盘",
+      "result_summary_style": "afternoon_review"
+    }
+  },
+  "task_result_summary_decision_rules": {
+    "full_monitor": [
+      {
+        "case": "red_alert",
+        "minimum_red_count": 1
+      },
+      {
+        "case": "high_value",
+        "minimum_high_value_count": 1
+      },
+      {
+        "case": "light_alert",
+        "minimum_alert_count": 1
+      },
+      {
+        "case": "quiet"
+      }
+    ],
+    "pre_open": [
+      {
+        "case": "red_alert",
+        "minimum_red_count": 1
+      },
+      {
+        "case": "high_value",
+        "minimum_high_value_count": 1
+      },
+      {
+        "case": "quiet"
+      }
+    ],
+    "morning_check": [
+      {
+        "case": "red_alert",
+        "minimum_red_count": 1
+      },
+      {
+        "case": "strong",
+        "minimum_high_value_count": 2
+      },
+      {
+        "case": "mixed",
+        "minimum_alert_count": 1
+      },
+      {
+        "case": "quiet"
+      }
+    ],
+    "midday_check": [
+      {
+        "case": "strong",
+        "minimum_high_value_count": 3
+      },
+      {
+        "case": "forming",
+        "minimum_high_value_count": 1
+      },
+      {
+        "case": "average",
+        "minimum_alert_count": 1
+      },
+      {
+        "case": "quiet"
+      }
+    ],
+    "afternoon_review": [
+      {
+        "case": "red_alert",
+        "minimum_red_count": 1
+      },
+      {
+        "case": "constructive",
+        "minimum_high_value_count": 2
+      },
+      {
+        "case": "watchable",
+        "minimum_orange_count": 1
+      },
+      {
+        "case": "quiet"
+      }
+    ]
+  }
+}

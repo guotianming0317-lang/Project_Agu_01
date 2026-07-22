@@ -1,0 +1,43 @@
+{
+  "rows": [
+    {
+      "code": "688549",
+      "name": "中巨芯-U",
+      "price": 12.34,
+      "pct_chg": 8.6,
+      "turnover": 123456789,
+      "volume_ratio": 2.3,
+      "turnover_rate": 4.5,
+      "pe_dynamic": 88.8,
+      "pb": 5.6,
+      "total_market_cap": 1000000000,
+      "float_market_cap": 800000000
+    },
+    {
+      "code": "688126",
+      "name": "沪硅产业",
+      "price": 19.99,
+      "pct_chg": 3.5,
+      "turnover": 987654321,
+      "volume_ratio": 1.8,
+      "turnover_rate": 3.2,
+      "pe_dynamic": 66.6,
+      "pb": 4.2,
+      "total_market_cap": 2000000000,
+      "float_market_cap": 1600000000
+    },
+    {
+      "code": "002371",
+      "name": "北方华创",
+      "price": 310.5,
+      "pct_chg": 2.4,
+      "turnover": 1560000000,
+      "volume_ratio": 1.5,
+      "turnover_rate": 2.1,
+      "pe_dynamic": 45.2,
+      "pb": 6.3,
+      "total_market_cap": 165000000000,
+      "float_market_cap": 158000000000
+    }
+  ]
+}

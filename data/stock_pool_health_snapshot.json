@@ -1,0 +1,22 @@
+{
+  "saved_at": "2026-07-23 00:05:33",
+  "record_count": 3,
+  "source_path": "C:\\Users\\NO.1\\AppData\\Local\\Temp\\tmpudfuzfnd\\stock_pool_sorted_counts.json",
+  "sector_counts": {
+    "半导体材料": 2,
+    "半导体气体": 1
+  },
+  "chain_group_counts": {
+    "材料": 2,
+    "气体": 1
+  },
+  "pool_type_counts": {
+    "core": 2,
+    "extended": 1
+  },
+  "priority_counts": {
+    "2": 2,
+    "1": 1
+  },
+  "structure_summary": "当前监控池偏向材料链，约占2/3；core池占比约为2/3。"
+}

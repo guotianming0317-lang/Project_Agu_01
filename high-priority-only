@@ -1,0 +1,15 @@
+News Batch Classification
+
+Source: .tmp_news_batch.json
+Items: 2
+Impact summary: 风险扩散 1 | 主线强化 0 | 局部验证 1
+
+1. 半导体设备出口管制升级
+Level: S | Sector: 半导体设备
+Bottom line: 更偏风险扩散，优先检查相关板块是否同步承压。 当前建议：优先盯核心池 中微公司、北方华创、拓荆科技 是否出现同步承压。
+
+2. 一般性行业跟踪
+Level: C | Sector: 半导体设备
+Bottom line: 更偏局部验证，建议等待更多扩散信号。 当前建议：优先盯核心池 中微公司、北方华创、拓荆科技 是否获得跟随确认。
+
+Usage: python -m app.main classify-news-batch "news_batch.json"

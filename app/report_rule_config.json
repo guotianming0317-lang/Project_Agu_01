@@ -1,0 +1,461 @@
+{
+  "a_share_mapping_rules": [
+    {
+      "keywords": ["材料", "气体"],
+      "suffix": "优先观察，可重点映射材料/气体链"
+    },
+    {
+      "keywords": ["设备"],
+      "suffix": "优先观察，可跟踪设备链扩散"
+    },
+    {
+      "keywords": ["算力", "服务器"],
+      "suffix": "优先观察，可关注算力硬件映射"
+    }
+  ],
+  "industry_chain_mapping_rules": [
+    {
+      "keywords": ["材料", "气体"],
+      "template": "{sector}优先观察，可重点映射{chain_groups}链条"
+    },
+    {
+      "keywords": ["设备"],
+      "template": "{sector}优先观察，可跟踪{chain_groups}链条延续"
+    },
+    {
+      "keywords": ["算力", "服务器"],
+      "template": "{sector}优先观察，可继续跟踪{chain_groups}链条"
+    }
+  ],
+  "stock_pool_structure_summary": {
+    "empty_template": "当前暂无可用的股票池结构摘要。",
+    "balanced_template": "当前股票池结构分布较均衡，建议继续结合板块强弱动态调整。",
+    "chain_group_template": "当前监控池偏向{top_chain_group}链，约占{top_chain_group_count}/{record_count}",
+    "pool_type_template": "{top_pool_type}池占比约为{top_pool_type_count}/{record_count}",
+    "separator": "；",
+    "suffix": "。"
+  },
+  "stock_pool_comparison_tags": {
+    "Awaiting baseline": "等待首个基线",
+    "Structure Stable": "结构稳定",
+    "Watchlist Expanded": "监控池扩容",
+    "Watchlist Trimmed": "监控池缩减",
+    "Materials Exposure Up": "材料链加仓",
+    "Materials Exposure Down": "材料链降权",
+    "Gas Exposure Up": "气体链加仓",
+    "Gas Exposure Down": "气体链降权",
+    "Equipment Exposure Up": "设备链加仓",
+    "Equipment Exposure Down": "设备链降权",
+    "Packaging Exposure Up": "封测链加仓",
+    "Packaging Exposure Down": "封测链降权",
+    "Memory Exposure Up": "存储链加仓",
+    "Memory Exposure Down": "存储链降权",
+    "Server Exposure Up": "服务器链加仓",
+    "Server Exposure Down": "服务器链降权",
+    "Optics Exposure Up": "光模块链加仓",
+    "Optics Exposure Down": "光模块链降权",
+    "Cooling Exposure Up": "液冷链加仓",
+    "Cooling Exposure Down": "液冷链降权",
+    "PCB Exposure Up": "PCB链加仓",
+    "PCB Exposure Down": "PCB链降权",
+    "Core Pool Weight Up": "核心池权重提升",
+    "Core Pool Weight Down": "核心池权重下降",
+    "Extended Pool Weight Up": "扩展池权重提升",
+    "Extended Pool Weight Down": "扩展池权重下降",
+    "Priority-1 Focus Up": "一级优先关注提升",
+    "Priority-1 Focus Down": "一级优先关注下降"
+  },
+  "stock_pool_comparison_tag_groups": {
+    "baseline_state": "基线状态",
+    "pool_scope": "监控范围",
+    "chain_exposure": "产业链暴露",
+    "pool_weight": "池层级权重",
+    "priority_focus": "优先级焦点",
+    "other_changes": "其他变化"
+  },
+  "tomorrow_plan_rules": [
+    {
+      "minimum_risk_count": 1,
+      "template": "优先确认{strongest_sector}是否延续强势，同时观察{secondary_sector}能否跟随修复，并继续验证风险是否扩散。"
+    },
+    {
+      "minimum_risk_count": 0,
+      "template": "优先观察{strongest_sector}是否延续强势，并跟踪{secondary_sector}能否形成进一步扩散。"
+    }
+  ],
+  "strength_label_rules": [
+    {
+      "minimum_strength": 4.0,
+      "label": "偏强"
+    },
+    {
+      "minimum_strength": 1.0,
+      "label": "震荡偏强"
+    }
+  ],
+  "position_bias_rules": [
+    {
+      "minimum_strength": 4.0,
+      "maximum_risk_count": 0,
+      "label": "积极观察"
+    },
+    {
+      "minimum_strength": 1.0,
+      "maximum_risk_count": 999,
+      "label": "观察"
+    }
+  ],
+  "reason_score_weights": {
+    "mainline": 3,
+    "strength": 3,
+    "follow-through": 2,
+    "liquidity": 1,
+    "risk-alert": 3,
+    "fading-sector": 2,
+    "price-weakness": 2,
+    "core-priority": 1,
+    "candidate-confirmation": 1,
+    "avoid-priority": 1
+  },
+  "reason_score_labels": {
+    "mainline": "主线",
+    "strength": "强势",
+    "follow-through": "跟随",
+    "liquidity": "流动性",
+    "risk-alert": "风险预警",
+    "fading-sector": "退潮板块",
+    "price-weakness": "价格走弱",
+    "core-priority": "核心兜底",
+    "candidate-confirmation": "候选确认",
+    "avoid-priority": "规避兜底"
+  },
+  "high_value_alert_types": [
+    "news_flash",
+    "materials_focus",
+    "sector_move"
+  ],
+  "alert_type_priority": {
+    "news_flash": 4,
+    "materials_focus": 3,
+    "sector_move": 2,
+    "price_spike": 1,
+    "volume_spike": 1
+  },
+  "market_focus_state_rules": [
+    {
+      "state": "divergence risk rising",
+      "minimum_red_count": 2,
+      "minimum_strongest_avg": 0.0,
+      "minimum_secondary_avg": 0.0,
+      "minimum_high_value_count": 0,
+      "minimum_strongest_gap": 0.0
+    },
+    {
+      "state": "breadth expansion",
+      "minimum_red_count": 0,
+      "minimum_strongest_avg": 4.0,
+      "minimum_secondary_avg": 2.5,
+      "minimum_high_value_count": 2,
+      "minimum_strongest_gap": 0.0
+    },
+    {
+      "state": "leader continuation",
+      "minimum_red_count": 0,
+      "minimum_strongest_avg": 4.0,
+      "minimum_secondary_avg": 0.0,
+      "minimum_high_value_count": 0,
+      "minimum_strongest_gap": 2.0
+    },
+    {
+      "state": "mixed rotation",
+      "minimum_red_count": 0,
+      "minimum_strongest_avg": 2.0,
+      "minimum_secondary_avg": 0.0,
+      "minimum_high_value_count": 1,
+      "minimum_strongest_gap": 0.0
+    }
+  ],
+  "market_focus_observation_templates": {
+    "breadth expansion": {
+      "default": "主线正从 {strongest_sector} 向 {secondary_sector} 扩散。",
+      "material_chain_internal": "材料/气体链内部正在形成扩散。",
+      "material_chain_to_equipment": "强势集中在材料/气体链，同时开始向设备方向扩散。",
+      "equipment_to_material_chain": "设备方向率先走强，材料/气体链开始出现跟随。"
+    },
+    "leader continuation": {
+      "default": "强势仍集中在 {strongest_sector}，更大范围扩散尚未确认。",
+      "material_chain": "强势仍集中在材料/气体链，向设备方向扩散尚未确认。",
+      "equipment": "设备方向独立承接行情，产业链更广范围跟随尚未确认。"
+    },
+    "divergence risk rising": {
+      "default": "风险正在升高，当前主线可能出现分歧；需要确认 {strongest_sector} 是否还能维持领涨。"
+    },
+    "mixed rotation": {
+      "default": "{strongest_sector} 与 {secondary_sector} 之间轮动活跃，但领涨方向还不够清晰。",
+      "material_chain_vs_equipment": "材料/气体链与设备之间轮动活跃，但尚未形成清晰主导方向。"
+    },
+    "quiet rotation": {
+      "default": "暂未看到清晰扩散，继续观察 {strongest_sector} 是否给出确认。"
+    }
+  },
+  "task_result_summary_rules": {
+    "full_monitor": {
+      "red_alert": "监控风险升高；本轮出现 {red_count} 条红色预警，合计 {alert_count} 条预警，需要优先复核。",
+      "high_value": "监控主线活跃；本轮识别到 {high_value_count} 条高价值信号。",
+      "light_alert": "监控主线偏轻；本轮捕捉到 {alert_count} 条预警。",
+      "quiet": "监控主线平静；本轮未触发需要重点处理的有效预警。"
+    },
+    "pre_open": {
+      "red_alert": "隔夜风险升高；开盘前需要复核 {red_count} 条红色预警。",
+      "high_value": "盘前准备偏活跃；有 {high_value_count} 条高价值题材或消息信号需要观察。",
+      "quiet": "盘前风险较平稳；暂未看到明显隔夜扰动。"
+    },
+    "morning_check": {
+      "red_alert": "开盘风险升高；{red_count} 条红色预警可能扰动早盘题材延续。",
+      "strong": "开盘题材确认较强；早盘出现 {high_value_count} 条高价值信号。",
+      "mixed": "开盘信号偏混合；出现 {alert_count} 条预警，但扩散仍有限。",
+      "quiet": "开盘盘面偏安静；暂未出现强确认信号。"
+    },
+    "midday_check": {
+      "strong": "盘中扩散较强；{high_value_count} 条高价值信号显示扩散有进一步延续迹象。",
+      "forming": "盘中扩散正在形成；{high_value_count} 条高价值信号值得继续跟踪。",
+      "average": "盘中广度一般；出现 {alert_count} 条预警，但尚未形成明显结构性扩散。",
+      "quiet": "盘中广度偏安静；暂未形成有效扩散信号。"
+    },
+    "afternoon_review": {
+      "red_alert": "尾盘复盘偏谨慎；仍有 {red_count} 条红色预警需要结合结构确认。",
+      "constructive": "收盘结构偏积极；{high_value_count} 条高价值信号延续到复盘时段。",
+      "watchable": "收盘结构仍可观察；{orange_count} 条橙色预警在尾盘仍有参考价值。",
+      "quiet": "收盘结构相对平稳；暂未看到主导尾盘的重大风险提示。"
+    }
+  },
+  "stage_alignment_templates": {
+    "aligned_with_strength": "阶段匹配：与 {chain_group} 对齐（{strength:.2f}%）。",
+    "aligned_without_strength": "阶段匹配：与 {chain_group} 对齐。",
+    "not_aligned": "阶段匹配：暂未匹配当前阶段焦点（{preferred_chain_groups}）。"
+  },
+  "detailed_alert_display": {
+    "block_title": "详细预警",
+    "empty_message": "本轮暂无详细预警。",
+    "title_template": "[{level}] {priority_label}预警",
+    "fields": [
+      {"key": "timestamp", "label": "时间", "default": "intraday", "enabled": true},
+      {"key": "direction", "label": "方向", "default": "n/a", "enabled": true},
+      {"key": "related_stocks", "label": "相关个股", "default": "n/a", "enabled": true},
+      {"key": "message", "label": "原因", "default": "n/a", "enabled": true},
+      {"key": "trend_state", "label": "趋势", "default": "watch", "enabled": true},
+      {"key": "focus", "label": "关注点", "default": "continue tracking", "enabled": true},
+      {"key": "stage_alignment", "label": "", "default": "", "enabled": true}
+    ],
+    "field_sets": {
+      "high_value": [
+        {"key": "timestamp", "label": "时间", "default": "intraday", "enabled": true},
+        {"key": "direction", "label": "方向", "default": "n/a", "enabled": true},
+        {"key": "related_stocks", "label": "相关个股", "default": "n/a", "enabled": true},
+        {"key": "message", "label": "原因", "default": "n/a", "enabled": true},
+        {"key": "trend_state", "label": "趋势", "default": "watch", "enabled": true},
+        {"key": "focus", "label": "关注点", "default": "continue tracking", "enabled": true},
+        {"key": "stage_alignment", "label": "", "default": "", "enabled": true}
+      ],
+      "watch": [
+        {"key": "timestamp", "label": "时间", "default": "intraday", "enabled": true},
+        {"key": "direction", "label": "方向", "default": "n/a", "enabled": true},
+        {"key": "message", "label": "原因", "default": "n/a", "enabled": true},
+        {"key": "focus", "label": "关注点", "default": "continue tracking", "enabled": true},
+        {"key": "stage_alignment", "label": "", "default": "", "enabled": true}
+      ]
+    },
+    "style_variants": {
+      "opening_focus": {
+        "block_title": "开盘详细预警",
+        "empty_message": "本轮暂无开盘详细预警。",
+        "title_template": "[{level}] {priority_label}开盘预警",
+        "field_sets": {
+          "high_value": [
+            {"key": "timestamp", "label": "时间", "default": "intraday", "enabled": true},
+            {"key": "direction", "label": "方向", "default": "n/a", "enabled": true},
+            {"key": "related_stocks", "label": "相关个股", "default": "n/a", "enabled": true},
+            {"key": "message", "label": "原因", "default": "n/a", "enabled": true},
+            {"key": "focus", "label": "关注点", "default": "continue tracking", "enabled": true},
+            {"key": "stage_alignment", "label": "", "default": "", "enabled": true}
+          ],
+          "watch": [
+            {"key": "timestamp", "label": "时间", "default": "intraday", "enabled": true},
+            {"key": "direction", "label": "方向", "default": "n/a", "enabled": true},
+            {"key": "message", "label": "原因", "default": "n/a", "enabled": true},
+            {"key": "stage_alignment", "label": "", "default": "", "enabled": true}
+          ]
+        }
+      },
+      "mid_session_balanced": {
+        "block_title": "盘中详细预警",
+        "empty_message": "本轮暂无盘中详细预警。",
+        "title_template": "[{level}] {priority_label}盘中预警",
+        "field_sets": {
+          "high_value": [
+            {"key": "timestamp", "label": "时间", "default": "intraday", "enabled": true},
+            {"key": "direction", "label": "方向", "default": "n/a", "enabled": true},
+            {"key": "related_stocks", "label": "相关个股", "default": "n/a", "enabled": true},
+            {"key": "message", "label": "原因", "default": "n/a", "enabled": true},
+            {"key": "trend_state", "label": "趋势", "default": "watch", "enabled": true},
+            {"key": "focus", "label": "关注点", "default": "continue tracking", "enabled": true},
+            {"key": "stage_alignment", "label": "", "default": "", "enabled": true}
+          ],
+          "watch": [
+            {"key": "timestamp", "label": "时间", "default": "intraday", "enabled": true},
+            {"key": "direction", "label": "方向", "default": "n/a", "enabled": true},
+            {"key": "message", "label": "原因", "default": "n/a", "enabled": true},
+            {"key": "focus", "label": "关注点", "default": "continue tracking", "enabled": true},
+            {"key": "stage_alignment", "label": "", "default": "", "enabled": true}
+          ]
+        }
+      },
+      "close_review": {
+        "block_title": "收盘详细预警",
+        "empty_message": "本轮暂无收盘详细预警。",
+        "title_template": "[{level}] {priority_label}收盘预警",
+        "field_sets": {
+          "high_value": [
+            {"key": "timestamp", "label": "时间", "default": "intraday", "enabled": true},
+            {"key": "direction", "label": "方向", "default": "n/a", "enabled": true},
+            {"key": "related_stocks", "label": "相关个股", "default": "n/a", "enabled": true},
+            {"key": "message", "label": "原因", "default": "n/a", "enabled": true},
+            {"key": "trend_state", "label": "趋势", "default": "watch", "enabled": true},
+            {"key": "focus", "label": "关注点", "default": "continue tracking", "enabled": true},
+            {"key": "stage_alignment", "label": "", "default": "", "enabled": true}
+          ],
+          "watch": [
+            {"key": "timestamp", "label": "时间", "default": "intraday", "enabled": true},
+            {"key": "direction", "label": "方向", "default": "n/a", "enabled": true},
+            {"key": "message", "label": "原因", "default": "n/a", "enabled": true},
+            {"key": "trend_state", "label": "趋势", "default": "watch", "enabled": true},
+            {"key": "stage_alignment", "label": "", "default": "", "enabled": true}
+          ]
+        }
+      }
+    },
+    "priority_labels": {
+      "high_value": "高价值",
+      "watch": "观察"
+    }
+  },
+  "market_focus_snapshot_display": {
+    "block_title": "市场焦点快照",
+    "fields": [
+      {"key": "observation", "label": "观察结论", "default": "n/a", "enabled": true},
+      {"key": "market_state", "label": "市场状态", "default": "n/a", "enabled": true},
+      {"key": "strongest_sector", "label": "最强板块", "default": "n/a", "enabled": true},
+      {"key": "second_sector", "label": "次强板块", "default": "n/a", "enabled": true},
+      {"key": "alert_mix", "label": "预警组合", "default": "n/a", "enabled": true},
+      {"key": "top_sector_average_move", "label": "最强板块均涨幅", "default": "0.00%", "enabled": true},
+      {"key": "top_focus_stocks", "label": "重点个股", "default": "n/a", "enabled": true}
+    ],
+    "style_variants": {
+      "opening_focus": {
+        "block_title": "开盘市场焦点",
+        "fields": [
+          {"key": "observation", "label": "观察结论", "default": "n/a", "enabled": true},
+          {"key": "strongest_sector", "label": "最强板块", "default": "n/a", "enabled": true},
+          {"key": "alert_mix", "label": "预警组合", "default": "n/a", "enabled": true},
+          {"key": "top_focus_stocks", "label": "重点个股", "default": "n/a", "enabled": true}
+        ]
+      },
+      "mid_session_balanced": {
+        "block_title": "盘中市场焦点",
+        "fields": [
+          {"key": "observation", "label": "观察结论", "default": "n/a", "enabled": true},
+          {"key": "market_state", "label": "市场状态", "default": "n/a", "enabled": true},
+          {"key": "strongest_sector", "label": "最强板块", "default": "n/a", "enabled": true},
+          {"key": "second_sector", "label": "次强板块", "default": "n/a", "enabled": true},
+          {"key": "alert_mix", "label": "预警组合", "default": "n/a", "enabled": true},
+          {"key": "top_focus_stocks", "label": "重点个股", "default": "n/a", "enabled": true}
+        ]
+      },
+      "close_review": {
+        "block_title": "收盘市场焦点",
+        "fields": [
+          {"key": "observation", "label": "观察结论", "default": "n/a", "enabled": true},
+          {"key": "market_state", "label": "市场状态", "default": "n/a", "enabled": true},
+          {"key": "strongest_sector", "label": "最强板块", "default": "n/a", "enabled": true},
+          {"key": "second_sector", "label": "次强板块", "default": "n/a", "enabled": true},
+          {"key": "alert_mix", "label": "预警组合", "default": "n/a", "enabled": true},
+          {"key": "top_sector_average_move", "label": "最强板块均涨幅", "default": "0.00%", "enabled": true},
+          {"key": "top_focus_stocks", "label": "重点个股", "default": "n/a", "enabled": true}
+        ]
+      }
+    }
+  },
+  "monitor_universe_display": {
+    "block_title": "监控池观察",
+    "stage_chain_fields": [
+      {"key": "stage_chain_focus", "label": "阶段链条焦点", "default": "n/a", "enabled": true},
+      {"key": "live_strength", "label": "Live strength", "default": "", "enabled": true},
+      {"key": "pool_coverage", "label": "股票池覆盖", "default": "n/a", "enabled": true},
+      {"key": "coverage_gap", "label": "Coverage gap", "default": "", "enabled": true}
+    ],
+    "style_variants": {
+      "opening_focus": {
+        "block_title": "开盘监控池观察",
+        "stage_chain_fields": [
+          {"key": "stage_chain_focus", "label": "阶段链条焦点", "default": "n/a", "enabled": true},
+          {"key": "pool_coverage", "label": "股票池覆盖", "default": "n/a", "enabled": true},
+          {"key": "coverage_gap", "label": "Coverage gap", "default": "", "enabled": true}
+        ]
+      },
+      "mid_session_balanced": {
+        "block_title": "盘中监控池观察",
+        "stage_chain_fields": [
+          {"key": "stage_chain_focus", "label": "阶段链条焦点", "default": "n/a", "enabled": true},
+          {"key": "live_strength", "label": "Live strength", "default": "", "enabled": true},
+          {"key": "pool_coverage", "label": "股票池覆盖", "default": "n/a", "enabled": true},
+          {"key": "coverage_gap", "label": "Coverage gap", "default": "", "enabled": true}
+        ]
+      },
+      "close_review": {
+        "block_title": "收盘监控池观察",
+        "stage_chain_fields": [
+          {"key": "stage_chain_focus", "label": "阶段链条焦点", "default": "n/a", "enabled": true},
+          {"key": "live_strength", "label": "Live strength", "default": "", "enabled": true},
+          {"key": "pool_coverage", "label": "股票池覆盖", "default": "n/a", "enabled": true}
+        ]
+      }
+    }
+  },
+  "console_overview_display": {
+    "fields": [
+      {"key": "result", "label": "结果", "default": "", "enabled": true},
+      {"key": "focus", "label": "焦点", "default": "", "enabled": true},
+      {"key": "quote_source", "label": "行情来源", "default": "n/a", "enabled": true},
+      {"key": "total_stocks", "label": "Total stocks in universe", "default": "0", "enabled": true},
+      {"key": "high_priority_stocks", "label": "High priority stocks", "default": "0", "enabled": true},
+      {"key": "environment", "label": "Environment", "default": "n/a", "enabled": false},
+      {"key": "database", "label": "Database", "default": "n/a", "enabled": false}
+    ],
+    "style_variants": {
+      "opening_focus": {
+        "fields": [
+          {"key": "result", "label": "结果", "default": "", "enabled": true},
+          {"key": "focus", "label": "焦点", "default": "", "enabled": true},
+          {"key": "quote_source", "label": "行情来源", "default": "n/a", "enabled": true}
+        ]
+      },
+      "mid_session_balanced": {
+        "fields": [
+          {"key": "result", "label": "结果", "default": "", "enabled": true},
+          {"key": "focus", "label": "焦点", "default": "", "enabled": true},
+          {"key": "quote_source", "label": "行情来源", "default": "n/a", "enabled": true},
+          {"key": "high_priority_stocks", "label": "High priority stocks", "default": "0", "enabled": true}
+        ]
+      },
+      "close_review": {
+        "fields": [
+          {"key": "result", "label": "结果", "default": "", "enabled": true},
+          {"key": "focus", "label": "焦点", "default": "", "enabled": true},
+          {"key": "quote_source", "label": "行情来源", "default": "n/a", "enabled": true},
+          {"key": "total_stocks", "label": "Total stocks in universe", "default": "0", "enabled": true},
+          {"key": "high_priority_stocks", "label": "High priority stocks", "default": "0", "enabled": true}
+        ]
+      }
+    }
+  }
+}
