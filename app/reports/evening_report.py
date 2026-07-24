@@ -32,13 +32,51 @@ from app.universe.stock_pool import (
 )
 
 
+def _translate_demo_names(text: str) -> str:
+    """Keep demo fallback labels understandable in the Chinese report."""
+    for source, target in {
+        "Demo Gas 1": "演示气体标的1",
+        "Demo Gas 2": "演示气体标的2",
+        "Demo Material 1": "演示材料标的1",
+        "Demo Equipment 1": "演示设备标的1",
+    }.items():
+        text = text.replace(source, target)
+    return text
+
+
+def _remove_demo_messages(values: object) -> list[object]:
+    """Keep fallback demo rows out of formal positive/negative conclusions."""
+    if not isinstance(values, (list, tuple)):
+        return []
+    return [
+        value
+        for value in values
+        if "Demo Gas" not in str(value)
+        and "Demo Material" not in str(value)
+        and "Demo Equipment" not in str(value)
+    ]
+
+
+def _clean_leader_value(value: object, label: str) -> str:
+    """Remove a duplicated leader label from an upstream value."""
+    text = _translate_demo_names(str(value or "").strip())
+    prefix = f"{label}："
+    while text.startswith(prefix):
+        text = text[len(prefix) :].strip()
+    return text or "待补充"
+
+
 def build_evening_report(context: dict[str, Any] | None = None) -> str:
     """Build an evening report from structured inputs."""
     context = context or {}
     leaders = context.get("leaders", {})
     materials_watch = join_report_items(context.get("materials_watch"), default="待补充")
-    positive_news = join_report_items(context.get("positive_news"), default="待补充")
-    negative_news = join_report_items(context.get("negative_news"), default="待补充")
+    positive_news = _translate_demo_names(
+        join_report_items(_remove_demo_messages(context.get("positive_news")), default="待补充")
+    )
+    negative_news = _translate_demo_names(
+        join_report_items(_remove_demo_messages(context.get("negative_news")), default="待补充")
+    )
     stock_pool_lines = build_stock_pool_observation_lines(
         structure_summary=str(context.get("stock_pool_structure_summary", "")).strip(),
         comparison_tag_groups=list(context.get("stock_pool_comparison_tag_groups", [])),
@@ -79,10 +117,10 @@ def build_evening_report(context: dict[str, Any] | None = None) -> str:
             ReportSection(
                 heading="二、龙头判断",
                 lines=(
-                    f"涨幅龙头：{leaders.get('涨幅龙头', '待补充')}",
-                    f"成交额龙头：{leaders.get('成交额龙头', '待补充')}",
-                    f"趋势龙头：{leaders.get('趋势龙头', '待补充')}",
-                    f"情绪龙头：{leaders.get('情绪龙头', '待补充')}",
+                    f"涨幅龙头：{_clean_leader_value(leaders.get('涨幅龙头'), '涨幅龙头')}",
+                    f"成交额龙头：{_clean_leader_value(leaders.get('成交额龙头'), '成交额龙头')}",
+                    f"趋势龙头：{_clean_leader_value(leaders.get('趋势龙头'), '趋势龙头')}",
+                    f"情绪龙头：{_clean_leader_value(leaders.get('情绪龙头'), '情绪龙头')}",
                 ),
             ),
             ReportSection(

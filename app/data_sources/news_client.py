@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import json
+import re
+import shutil
+import subprocess
 from datetime import datetime
 from pathlib import Path
 from typing import Callable
@@ -55,7 +58,7 @@ def fetch_remote_news_items(
         }
 
     try:
-        payload = json.loads(payload_text)
+        payload = json.loads(_strip_jsonp_wrapper(payload_text))
     except json.JSONDecodeError as exc:
         return [], {
             "status": "invalid",
@@ -74,6 +77,11 @@ def fetch_remote_news_items(
             "content": item["content"],
             "source": item["source"],
             "source_date": item.get("source_date", ""),
+            **(
+                {"source_url": item["source_url"]}
+                if str(item.get("source_url", "")).strip()
+                else {}
+            ),
         }
         for item in items
     ]
@@ -89,6 +97,15 @@ def fetch_remote_news_items(
         "reason": "Remote news feed is readable.",
         "next_step": "python -m app.main refresh-daily-news-batch",
     }
+
+
+def _strip_jsonp_wrapper(payload_text: str) -> str:
+    """Accept JSONP responses commonly returned by public finance feeds."""
+    text = str(payload_text or "").strip()
+    if text.startswith("{") or text.startswith("["):
+        return text
+    match = re.match(r"^[^(]+\((.*)\)\s*;?\s*$", text, flags=re.DOTALL)
+    return match.group(1).strip() if match else text
 
 
 def build_news_source_status(feed_path: Path | str | None) -> dict[str, str]:
@@ -225,8 +242,34 @@ def _fetch_remote_text(feed_url: str) -> str:
             "Accept": "application/json,text/plain,*/*",
         },
     )
-    with urlopen(request, timeout=15) as response:  # noqa: S310 - user-configured URL
-        return response.read().decode("utf-8-sig")
+    try:
+        with urlopen(request, timeout=15) as response:  # noqa: S310 - user-configured URL
+            return response.read().decode("utf-8-sig")
+    except Exception as urllib_error:  # noqa: BLE001 - use the proven Windows fallback
+        curl_executable = shutil.which("curl.exe") or shutil.which("curl")
+        if not curl_executable:
+            raise urllib_error
+        result = subprocess.run(
+            [
+                curl_executable,
+                "--silent",
+                "--show-error",
+                "--location",
+                "--max-time",
+                "20",
+                "-H",
+                "User-Agent: Mozilla/5.0",
+                "-H",
+                "Accept: application/json,text/plain,*/*",
+                feed_url,
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode != 0 or not result.stdout.strip():
+            raise urllib_error
+        return result.stdout.lstrip("\ufeff")
 
 
 def _extract_remote_news_rows(payload: object) -> list[object]:
@@ -235,7 +278,7 @@ def _extract_remote_news_rows(payload: object) -> list[object]:
         return list(payload)
     if not isinstance(payload, dict):
         return []
-    for key in ("items", "data", "list", "news", "articles", "result"):
+    for key in ("items", "data", "list", "news", "articles", "result", "fastNewsList", "roll_data"):
         value = payload.get(key)
         if isinstance(value, list):
             return list(value)
@@ -257,7 +300,9 @@ def _normalize_local_feed_items(
         if not isinstance(raw_item, dict):
             continue
         title = _first_non_empty_value(raw_item, ("title", "headline", "name"))
-        content = _first_non_empty_value(raw_item, ("content", "summary", "description", "body"))
+        content = _first_non_empty_value(
+            raw_item, ("content", "summary", "brief", "description", "body")
+        )
         if not title or not content:
             continue
         item = {key: str(value).strip() for key, value in raw_item.items() if value is not None}
@@ -265,6 +310,15 @@ def _normalize_local_feed_items(
         item["content"] = content
         item["source"] = item.get("source") or "local-feed"
         item["source_date"] = item.get("source_date") or source_date
+        source_url = (
+            item.get("source_url")
+            or item.get("url")
+            or item.get("link")
+            or item.get("articleUrl")
+            or item.get("newsUrl")
+        )
+        if source_url:
+            item["source_url"] = str(source_url).strip()
         items.append(item)
     return items
 

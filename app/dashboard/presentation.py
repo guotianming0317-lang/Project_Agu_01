@@ -2360,6 +2360,15 @@ def build_panel_container_style_spec() -> dict[str, str]:
     }
 
 
+def build_semantic_signal_style_spec() -> dict[str, str]:
+    """Return replaceable A-share semantic colors for sentiment display."""
+    return {
+        "positive": "#d93025",
+        "negative": "#188038",
+        "neutral": "#b06000",
+    }
+
+
 def build_view_mode_specs() -> dict[str, dict[str, str]]:
     """Return replaceable explanatory copy for dashboard view modes."""
     return {

@@ -4,12 +4,13 @@ from __future__ import annotations
 
 import io
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from app.alerts.notifier import (
     build_alert_digest_text,
     build_notification_channel_status,
     format_alert_message,
+    notify_feishu_text,
     notify_console,
     select_alerts_for_digest,
 )
@@ -38,6 +39,19 @@ class NotifierTests(unittest.TestCase):
 
         self.assertEqual("webhook-ready", status["status"])
         self.assertEqual("feishu", status["channel"])
+
+    def test_notify_feishu_text_posts_json_payload(self) -> None:
+        response = Mock()
+        response.read.return_value = b'{"code": 0}'
+        response.__enter__ = Mock(return_value=response)
+        response.__exit__ = Mock(return_value=False)
+        with patch("app.alerts.notifier.urlopen", return_value=response) as urlopen:
+            result = notify_feishu_text("今日摘要：利好主线强化", webhook_url="https://example.test/hook")
+
+        self.assertEqual("sent", result["status"])
+        request = urlopen.call_args.args[0]
+        self.assertEqual("POST", request.method)
+        self.assertIn("利好主线强化", request.data.decode("utf-8"))
 
     def test_format_alert_message_uses_expected_layout(self) -> None:
         message = format_alert_message(

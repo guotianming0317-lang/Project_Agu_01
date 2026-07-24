@@ -464,6 +464,71 @@ def render_compact_next_session_action_lines(summary: dict[str, object]) -> tupl
     )
 
 
+def render_compact_next_session_action_lines(summary: dict[str, object]) -> tuple[str, ...]:
+    """Render a compact, readable strategy block with stable Chinese labels."""
+    labels = {
+        "core": ("核心关注", "优先跟踪", "★"),
+        "candidate": ("候选确认", "等待板块跟随确认", "候选"),
+        "avoid": ("风险规避", "减少关注", "!"),
+    }
+    lines = [str(line).strip() for line in summary.get("rule_summary_lines", ()) if str(line).strip()]
+    lines.append(
+        "评分说明：主线+3=属于当前最强主线；强势+3=涨幅达到强势标准；"
+        "跟随+2=出现板块跟随；流动性+1=成交活跃；"
+        "风险预警-3=出现高风险信号；退潮板块-2=所属板块走弱；价格走弱-2=个股表现偏弱。"
+    )
+    for key in ("core", "candidate", "avoid"):
+        section = dict(summary.get(key, {}))
+        names = [
+            str(name).strip()
+            for name in section.get("watchlist", [])
+            if str(name).strip()
+            and not any(
+                marker in str(name)
+                for marker in ("Demo Gas", "Demo Material", "Demo Equipment")
+            )
+        ]
+        names = [
+            name.replace("Demo Gas 1", "演示气体标的1")
+            .replace("Demo Gas 2", "演示气体标的2")
+            .replace("Demo Material 1", "演示材料标的1")
+            .replace("Demo Equipment 1", "演示设备标的1")
+            for name in names
+        ]
+        if not names:
+            continue
+        title, action, marker = labels[key]
+        tags = dict(section.get("tags", {}))
+        scores = dict(section.get("scores", {}))
+        score_parts = []
+        factor_parts = []
+        for name in names:
+            if name in scores:
+                score = int(scores[name])
+                if score >= 6:
+                    level = "核心"
+                elif score >= 3:
+                    level = "候选"
+                elif score <= -3:
+                    level = "风险"
+                else:
+                    level = "观察"
+                score_parts.append(f"{name} {score}分({level})")
+            raw_tags = [str(tag).strip() for tag in tags.get(name, []) if str(tag).strip()]
+            translated = [str(REASON_SCORE_LABELS.get(tag, tag)).strip() for tag in raw_tags]
+            if translated:
+                factor_parts.append(f"{name}：{'、'.join(translated)}")
+        reason = str(section.get("reason", "")).strip()
+        lines.extend(
+            (
+                f"[{marker}]【{title}】股票：{'、'.join(names)}",
+                f"评分：{'; '.join(score_parts) or '待确认'} | 触发因素：{'; '.join(factor_parts) or '待确认'}",
+                f"提示：{action}" + (f"；{reason}" if reason else ""),
+            )
+        )
+    return tuple(lines)
+
+
 def join_names_for_display(names: list[str], *, default: str) -> str:
     """Join a simple stock-name list for compact report rendering."""
     return join_report_items(names, default=default)

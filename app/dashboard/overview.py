@@ -24,6 +24,7 @@ from app.reports.shared import build_stock_pool_drift_summary_text
 from app.universe.stock_pool import (
     build_stock_pool_health_comparison,
     build_stock_pool_health_summary,
+    get_all_stocks,
 )
 
 
@@ -362,6 +363,7 @@ def _build_alert_balance(alerts: list[dict[str, Any]]) -> dict[str, int]:
 def _build_stock_pool_health_summary() -> dict[str, Any]:
     """Build a compact stock-pool validation summary for dashboard reuse."""
     summary = dict(build_stock_pool_health_summary())
+    summary["extension_summary"] = _build_extension_pool_summary()
     comparison = build_stock_pool_health_comparison(summary)
     drift_summary = build_stock_pool_drift_summary_text(
         structure_summary=str(summary.get("structure_summary", "")).strip(),
@@ -391,6 +393,24 @@ def _build_stock_pool_health_summary() -> dict[str, Any]:
         }
     )
     return summary
+
+
+def _build_extension_pool_summary() -> str:
+    """Summarize the AI upstream/downstream extension layer for the dashboard."""
+    extended = [
+        row for row in get_all_stocks()
+        if str(row.get("pool_type", "")).strip() == "extended"
+    ]
+    if not extended:
+        return "扩展观察池：暂无标的"
+    sector_counts: dict[str, int] = {}
+    for row in extended:
+        sector = str(row.get("monitor_sector") or row.get("sector") or "待分类").strip()
+        sector_counts[sector] = sector_counts.get(sector, 0) + 1
+    distribution = "、".join(
+        f"{sector}{count}只" for sector, count in sorted(sector_counts.items())
+    )
+    return f"扩展观察池：{len(extended)}只；产业链分布：{distribution}"
 
 
 def _build_today_priority_summary() -> dict[str, Any]:

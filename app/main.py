@@ -8,11 +8,12 @@ import logging
 import os
 import sys
 import unittest
+import re
 from datetime import datetime
 from pathlib import Path
 
 from app.alerts.alert_rules import evaluate_alerts
-from app.alerts.notifier import build_notification_channel_status
+from app.alerts.notifier import build_notification_channel_status, notify_feishu_card
 from app.analysis.news_classifier import classify_news
 from app.config import AppConfig, load_config
 from app.data_sources.akshare_client import (
@@ -40,10 +41,12 @@ from app.data_sources.announcement_client import (
     fetch_remote_announcement_items,
     load_announcement_feed_items,
 )
+from app.data_sources.us_market_client import fetch_us_market_overview, save_us_market_overview
 from app.database import fetch_latest_market_snapshots, initialize_database
 from app.history import build_history_summary
 from app.pipeline import build_cycle_console_output, run_monitor_cycle
 from app.reports.shared import build_stock_pool_drift_summary_text
+from app.reports.us_market_overview import build_us_market_overview_text
 from app.reports.evening_report import build_evening_report_from_database
 from app.reports.morning_report import build_morning_report_from_database
 from app.sectors import (
@@ -150,7 +153,69 @@ def run_demo(config: AppConfig) -> None:
 
 def print_latest_database_review(database_path: Path) -> None:
     """Print the latest database-backed evening review."""
-    print(_build_latest_database_review_text(database_path))
+    report = _build_latest_database_review_text(database_path)
+    print(_colorize_terminal_report(report))
+
+
+def _colorize_terminal_report(report: str) -> str:
+    """Add terminal-only emphasis without changing saved report text."""
+    requested = os.getenv("MONITOR_COLOR_OUTPUT", "auto").strip().lower()
+    enabled = requested in {"1", "true", "yes", "on"} or (
+        requested == "auto" and sys.stdout.isatty()
+    )
+    if not enabled:
+        return report
+    # A-share convention: red means rising/positive, green means falling/negative.
+    red = "\x1b[91m"
+    green = "\x1b[92m"
+    yellow = "\x1b[93m"
+    cyan = "\x1b[96m"
+    reset = "\x1b[0m"
+    colored: list[str] = []
+    for line in report.splitlines():
+        market_change = re.search(r"(?:涨跌|\([^)]*\))\s*([+-]\d+(?:\.\d+)?%)", line)
+        if market_change:
+            change = market_change.group(1)
+            color = red if change.startswith("+") else green
+            line = line.replace(change, f"{color}{change}{reset}", 1)
+            colored.append(line)
+            continue
+        sentiment_prefix = "消息倾向："
+        if line.startswith(sentiment_prefix):
+            sentiment_value = line[len(sentiment_prefix):]
+            if sentiment_value.startswith("利好"):
+                sentiment_color = red
+            elif sentiment_value.startswith("利空"):
+                sentiment_color = green
+            elif sentiment_value.startswith("中性"):
+                sentiment_color = yellow
+            else:
+                sentiment_color = ""
+            if sentiment_color:
+                colored.append(f"{sentiment_prefix}{sentiment_color}{sentiment_value}{reset}")
+            else:
+                colored.append(line)
+            continue
+        if line.startswith("利好消息：") or line.startswith("结论：更偏主线强化") or line.startswith("[★]"):
+            color = red
+        elif line.startswith("利空消息：") or line.startswith("结论：更偏风险扩散") or line.startswith("[!]"):
+            color = green
+        elif line.startswith("消息倾向：中性") or line.startswith("结论：更偏局部验证"):
+            color = yellow
+        elif line.startswith("[候选]") or line.startswith("评分规则：") or line.startswith("兜底规则："):
+            color = yellow
+        elif line.startswith("评分：") or line.startswith("触发因素："):
+            color = cyan
+        else:
+            colored.append(line)
+            continue
+        colored.append(f"{color}{line}{reset}")
+    return "\n".join(colored)
+
+
+def _print_terminal_report(report: str) -> None:
+    """Print a report with terminal-only semantic colors."""
+    print(_colorize_terminal_report(report))
 
 
 def print_latest_database_morning_review(database_path: Path) -> None:
@@ -240,7 +305,7 @@ def main(argv: list[str] | None = None) -> None:
     if command == "classify-news-batch":
         batch_path = argv[1] if len(argv) > 1 else ""
         filter_mode = argv[2] if len(argv) > 2 else ""
-        print(_build_news_batch_classification_text(batch_path, filter_mode=filter_mode))
+        _print_terminal_report(_build_news_batch_classification_text(batch_path, filter_mode=filter_mode))
         return
     if command == "validate-news-batch":
         batch_path = argv[1] if len(argv) > 1 else ""
@@ -248,25 +313,25 @@ def main(argv: list[str] | None = None) -> None:
         return
     if command == "news-batch-first-pass":
         batch_path = argv[1] if len(argv) > 1 else ""
-        print(_build_news_batch_first_pass_text(batch_path))
+        _print_terminal_report(_build_news_batch_first_pass_text(batch_path))
         return
     if command == "news-batch-priority-pass":
         batch_path = argv[1] if len(argv) > 1 else ""
-        print(_build_news_batch_priority_pass_text(batch_path))
+        _print_terminal_report(_build_news_batch_priority_pass_text(batch_path))
         return
     if command == "news-batch-priority-export":
         batch_path = argv[1] if len(argv) > 1 else ""
         export_path = argv[2] if len(argv) > 2 else ""
-        print(_build_news_batch_priority_export_text(batch_path, export_path))
+        _print_terminal_report(_build_news_batch_priority_export_text(batch_path, export_path))
         return
     if command == "batch-news-daily-flow":
         batch_path = argv[1] if len(argv) > 1 else ""
-        print(_build_batch_news_daily_flow_text(batch_path))
+        _print_terminal_report(_build_batch_news_daily_flow_text(batch_path))
         return
     if command == "batch-news-daily-export":
         batch_path = argv[1] if len(argv) > 1 else ""
         export_path = argv[2] if len(argv) > 2 else ""
-        print(_build_batch_news_daily_export_text(batch_path, export_path))
+        _print_terminal_report(_build_batch_news_daily_export_text(batch_path, export_path))
         return
     if command == "create-daily-news-batch":
         target_path = argv[1] if len(argv) > 1 else ""
@@ -274,12 +339,12 @@ def main(argv: list[str] | None = None) -> None:
         return
     if command == "refresh-daily-news-batch":
         target_path = argv[1] if len(argv) > 1 else ""
-        print(_build_refresh_daily_news_batch_text(target_path))
+        _print_terminal_report(_build_refresh_daily_news_batch_text(target_path))
         return
     if command == "refresh-external-feeds-pass-check":
         batch_path = argv[1] if len(argv) > 1 else ""
         export_path = argv[2] if len(argv) > 2 else ""
-        print(_build_refresh_external_feeds_pass_check_text(batch_path, export_path))
+        _print_terminal_report(_build_refresh_external_feeds_pass_check_text(batch_path, export_path))
         return
     if command == "external-feeds-status":
         print(_build_external_feeds_status_text())
@@ -345,6 +410,9 @@ def main(argv: list[str] | None = None) -> None:
         target_path = argv[1] if len(argv) > 1 else ""
         print(_build_refresh_local_quote_pass_check_text(config, target_path))
         return
+    if command == "refresh-us-market-summary":
+        print(_build_refresh_us_market_summary_text())
+        return
     if command == "import-local-quote":
         source_path = argv[1] if len(argv) > 1 else ""
         target_path = argv[2] if len(argv) > 2 else ""
@@ -358,7 +426,13 @@ def main(argv: list[str] | None = None) -> None:
     if command == "start-daily-news-workflow":
         batch_path = argv[1] if len(argv) > 1 else ""
         export_path = argv[2] if len(argv) > 2 else ""
-        print(_build_start_daily_news_workflow_text(batch_path, export_path))
+        workflow_report = _build_start_daily_news_workflow_text(batch_path, export_path)
+        _print_terminal_report(workflow_report)
+        if (
+            os.environ.get("MONITOR_ENABLE_PUSH", "0").strip().lower()
+            in {"1", "true", "yes", "on"}
+        ):
+            _notify_daily_feishu_digest(workflow_report, export_path)
         return
     if command == "mainline-smoke-test":
         batch_path = argv[1] if len(argv) > 1 else ""
@@ -441,6 +515,128 @@ def main(argv: list[str] | None = None) -> None:
     print(_build_command_help_text())
 
 
+def _notify_daily_feishu_digest(workflow_report: str, export_path: str) -> None:
+    """Send one compact daily digest and suppress same-day duplicate pushes."""
+    if not os.environ.get("MONITOR_FEISHU_WEBHOOK_URL", "").strip():
+        return
+    stamp = datetime.now().strftime("%Y%m%d")
+    marker = Path("data/news") / f".feishu_sent_{stamp}"
+    if marker.exists():
+        return
+    digest = _build_feishu_compact_digest(workflow_report)
+    result = notify_feishu_card(_build_feishu_colored_markdown(digest))
+    if result.get("status") == "sent":
+        marker.parent.mkdir(parents=True, exist_ok=True)
+        marker.write_text(datetime.now().isoformat(timespec="seconds"), encoding="utf-8")
+
+
+def _build_refresh_us_market_summary_text() -> str:
+    """Refresh the real US market snapshot used by daily reports."""
+    target = Path(os.getenv("MONITOR_US_MARKET_SUMMARY_PATH", "data/market/us_market_summary.json"))
+    payload, message = fetch_us_market_overview()
+    if payload is None:
+        return "\n".join([
+            "刷新美股收盘概括",
+            "状态：失败",
+            f"原因：{message}",
+            f"保留已有快照：{target}",
+            "下一步：检查网络后重新运行 python -m app.main refresh-us-market-summary",
+        ])
+    saved = save_us_market_overview(payload, target)
+    return "\n".join([
+        "刷新美股收盘概括",
+        "状态：成功",
+        f"保存位置：{saved}",
+        f"数据日期：{payload.get('date', '未提供')}",
+        "下一步：运行 python -m app.main start-daily-news-workflow",
+    ])
+
+
+def _build_feishu_compact_digest(workflow_report: str) -> str:
+    """Keep only actionable priority items for the Feishu message."""
+    lines = str(workflow_report or "").splitlines()
+    compact: list[str] = [
+        build_us_market_overview_text(),
+        "",
+        f"日期：{datetime.now():%Y-%m-%d}",
+        "今日重点：",
+    ]
+    started = False
+    batch_titles: list[str] = []
+    in_batch = False
+    for line in lines:
+        text = line.strip()
+        if text == "新闻批量分类" and not in_batch:
+            in_batch = True
+            continue
+        if in_batch and text == "优先级筛选":
+            in_batch = False
+        if in_batch and text[:2].isdigit() and ". " in text[:4]:
+            batch_titles.append(text)
+        if text == "优先级筛选":
+            started = True
+            continue
+        if not started:
+            continue
+        if text.startswith("用法："):
+            break
+        if (
+            text[:2].isdigit() and ". " in text[:4]
+            or text.startswith("消息倾向：")
+            or text.startswith("级别：")
+            or text.startswith("结论：")
+        ):
+            compact.append(text)
+    if batch_titles:
+        compact.extend(["", "新闻批量分类", *batch_titles])
+    if len(compact) == 4:
+        return "\n".join([
+            build_us_market_overview_text(),
+            "",
+            f"日期：{datetime.now():%Y-%m-%d}",
+            "今日暂无高优先级消息。",
+        ])
+    return "\n".join(compact)
+
+
+def _build_feishu_colored_markdown(digest: str) -> str:
+    """Apply A-share colors to sentiment values in Feishu markdown."""
+    rendered: list[str] = []
+    for line in str(digest or "").splitlines():
+        if line.startswith("纳斯达克综合指数：") or line.startswith("费城半导体指数："):
+            label, value = line.split("：", 1)
+            line = f"<font color='purple'>{label}：</font>{_colorize_feishu_change(value)}"
+        elif line.startswith(("强势板块：", "弱势板块：", "半导体相关ETF表现：", "AI相关ETF表现：")):
+            label, value = line.split("：", 1)
+            line = f"{label}：{_colorize_feishu_change(value)}"
+        if line.startswith("消息倾向：利好"):
+            line = line.replace("利好", "<font color='red'>利好</font>", 1)
+        elif line.startswith("消息倾向：利空"):
+            line = line.replace("利空", "<font color='green'>利空</font>", 1)
+        elif line.startswith("消息倾向：中性"):
+            line = line.replace("中性", "<font color='yellow'>中性</font>", 1)
+        rendered.append(line)
+    return _build_feishu_collapsed_digest("\n".join(rendered))
+
+
+def _colorize_feishu_change(text: str) -> str:
+    """Color percentage changes using A-share red-up/green-down convention."""
+    return re.sub(
+        r"([+-]\d+(?:\.\d+)?%)",
+        lambda match: f"<font color='{('red' if match.group(1).startswith('+') else 'green')}'>{match.group(1)}</font>",
+        str(text),
+    )
+
+
+def _build_feishu_collapsed_digest(markdown: str) -> str:
+    """Keep the verbose batch classification behind a Feishu collapsible section."""
+    marker = "新闻批量分类"
+    if marker not in markdown:
+        return markdown
+    head, detail = markdown.split(marker, 1)
+    return f"{head}<details><summary>展开新闻批量分类</summary>新闻批量分类{detail}</details>"
+
+
 def _run_scheduler_mode(config: AppConfig) -> None:
     """Start scheduler mode only when explicitly enabled."""
     if not config.enable_scheduler:
@@ -517,6 +713,8 @@ def _build_command_help_text() -> str:
         "- 一次完成导入 -> 校验 -> 自检",
         "- python -m app.main validate-local-quote",
         "- 校验本地真实行情快照是否可用",
+        "- python -m app.main refresh-us-market-summary",
+        "- 刷新纳斯达克、费城半导体及主要行业ETF概况",
         "- python -m app.main start-daily-news-workflow",
         "- 启动当日新闻优先级流程",
         "- python -m app.main refresh-daily-news-batch",
@@ -1574,7 +1772,20 @@ def _get_announcement_feed_path() -> Path | None:
 
 def _get_announcement_feed_url() -> str:
     """Resolve the optional remote announcement feed URL."""
-    return str(os.environ.get("MONITOR_ANNOUNCEMENT_FEED_URL", "")).strip()
+    configured_url = str(os.environ.get("MONITOR_ANNOUNCEMENT_FEED_URL", "")).strip()
+    if configured_url:
+        return configured_url
+    return _build_default_announcement_feed_url()
+
+
+def _build_default_announcement_feed_url() -> str:
+    """Build the public Eastmoney A-share announcement list endpoint."""
+    today = datetime.now().strftime("%Y-%m-%d")
+    return (
+        "https://np-anotice-stock.eastmoney.com/api/security/ann?"
+        "sr=-1&page_size=50&page_index=1&ann_type=SHA,CYB,SZA,BJA&"
+        f"client_source=web&f_node=0&s_node=0&begin_time={today}&end_time={today}"
+    )
 
 
 def _build_notification_status_text() -> str:
@@ -2028,7 +2239,7 @@ def _build_refresh_external_feeds_pass_check_text(batch_path: str, export_path: 
 
 def _build_external_feeds_status_text() -> str:
     """Build a read-only status view for remote/local external feed readiness."""
-    news_url = _get_news_feed_url()
+    news_url = _get_configured_news_feed_url()
     announcement_url = _get_announcement_feed_url()
     default_news_feed_path = _build_default_local_news_feed_path()
     default_announcement_feed_path = _build_default_local_announcement_feed_path()
@@ -2159,7 +2370,22 @@ def _get_daily_news_feed_path() -> Path | None:
 
 def _get_news_feed_url() -> str:
     """Resolve the optional remote news feed URL."""
-    return str(os.environ.get("MONITOR_NEWS_FEED_URL", "")).strip()
+    configured_url = _get_configured_news_feed_url()
+    if configured_url and "你的真实新闻JSON地址" not in configured_url:
+        return configured_url
+    return (
+        "https://np-weblist.eastmoney.com/comm/web/getFastNewsList?"
+        "client=web&biz=web_724&fastColumn=102&sortEnd=&pageSize=50&"
+        "req_trace=project_agu_01"
+    )
+
+
+def _get_configured_news_feed_url() -> str:
+    """Return only an explicitly configured, non-placeholder news URL."""
+    configured_url = str(os.environ.get("MONITOR_NEWS_FEED_URL", "")).strip()
+    if "你的真实新闻JSON地址" in configured_url:
+        return ""
+    return configured_url
 
 
 def _build_daily_news_source_mode(
@@ -2185,8 +2411,38 @@ def _build_daily_news_items(
 ) -> list[dict[str, str]]:
     """Build the daily news list from local feeds plus automatic candidates."""
     items = fetch_daily_news_candidates(feed_path=feed_path)
-    announcement_items = load_announcement_feed_items(announcement_path)
+    announcement_items = _filter_relevant_announcement_items(
+        load_announcement_feed_items(announcement_path)
+    )
     return _dedupe_daily_news_items([*announcement_items, *items])
+
+
+def _filter_relevant_announcement_items(
+    items: list[dict[str, str]],
+) -> list[dict[str, str]]:
+    """Keep announcements tied to the configured pool or AI-semiconductor themes."""
+    if not items:
+        return []
+    stock_names = {
+        str(row.get("name", "")).strip()
+        for row in get_all_stocks()
+        if str(row.get("name", "")).strip()
+    }
+    theme_keywords = (
+        "半导体", "芯片", "晶圆", "光刻", "电子气体", "特气", "硅片",
+        "光模块", "CPO", "服务器", "算力", "HBM", "封装", "PCB", "液冷",
+    )
+    relevant: list[dict[str, str]] = []
+    for item in items:
+        haystack = " ".join(
+            str(item.get(key, "")).strip()
+            for key in ("title", "content", "related_stocks")
+        )
+        if any(name in haystack for name in stock_names) or any(
+            keyword in haystack for keyword in theme_keywords
+        ):
+            relevant.append(item)
+    return relevant
 
 
 def _dedupe_daily_news_items(items: list[dict[str, str]]) -> list[dict[str, str]]:
@@ -2710,6 +2966,8 @@ def _build_start_daily_news_workflow_text(batch_path: str, export_path: str) -> 
         "",
         "今日第一遍阅读",
         "",
+        build_us_market_overview_text(),
+        "",
         f"新闻源文件：{resolved_batch_path}",
         f"源文件状态：{_translate_daily_news_source_status(source_status)}",
         f"今日摘要文件：{resolved_export_path}",
@@ -3198,9 +3456,9 @@ def _build_daily_status_color(impact_summary: str) -> str:
     local_count = _extract_impact_count(impact_summary, "局部验证")
 
     if risk_count > mainline_count:
-        return "红色：偏风险扩散"
+        return "绿色：偏风险扩散"
     if mainline_count > risk_count:
-        return "绿色：偏主线强化"
+        return "红色：偏主线强化"
     if risk_count > 0 or mainline_count > 0:
         return "橙色：偏均衡跟踪"
     if local_count > 0:
@@ -3534,6 +3792,7 @@ def _build_news_batch_classification_text_from_items(
         entry_rows.append(
             {
                 "title": title or "(empty title)",
+                "source_url": str(item.get("source_url", item.get("url", ""))).strip(),
                 "level": str(result["level"]),
                 "sector": str(result["related_sector"]),
                 "bottom_line": bottom_line,
@@ -3647,7 +3906,14 @@ def _load_news_batch_items(
         if not content:
             validation_issues.append(f"第 {index} 条：缺少 content。")
         if title and content:
-            validated_items.append({"title": title, "content": content})
+            source_url = str(item.get("source_url", item.get("url", ""))).strip()
+            validated_items.append(
+                {
+                    "title": title,
+                    "content": content,
+                    **({"source_url": source_url} if source_url else {}),
+                }
+            )
 
     if validation_issues:
         return [], "\n".join(
@@ -3850,16 +4116,30 @@ def _build_news_batch_entry_lines(
     level = str(row.get("level", "")).strip()
     sector = str(row.get("sector", "")).strip()
     bottom_line = str(row.get("bottom_line", "")).strip()
+    impact_label = str(row.get("impact_label", "")).strip()
+    source_url = str(row.get("source_url", "")).strip()
     normalized_filter_mode = str(filter_mode or "").strip()
 
     lines = [
         "",
         f"{display_index}. {title}",
+        f"消息倾向：{_news_sentiment_label(impact_label)}（{impact_label or '待判断'}）",
         f"级别：{level} | 板块：{sector}",
     ]
+    if source_url.startswith(("http://", "https://")):
+        lines.append(f"原文：[{title}]({source_url})")
     if normalized_filter_mode != "summary-only" and bottom_line:
         lines.append(f"结论：{bottom_line}")
     return lines
+
+
+def _news_sentiment_label(impact_label: str) -> str:
+    """Translate internal impact labels into reader-facing sentiment labels."""
+    return {
+        "风险扩散": "利空",
+        "主线强化": "利好",
+        "局部验证": "中性",
+    }.get(str(impact_label or "").strip(), "待判断")
 
 
 def _build_news_batch_sort_key(

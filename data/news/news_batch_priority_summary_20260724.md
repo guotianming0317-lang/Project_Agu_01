@@ -2,8 +2,8 @@
 
 This note is the same-day high-priority news watch summary for quick research reading.
 
-- Date: 2026-07-23
-- Source batch: data\news\news_batch_20260723.json
+- Date: 2026-07-24
+- Source batch: data\news\news_batch_20260724.json
 - Total batch items: 54
 - Priority items shown: 2/54
 - Impact summary: 风险扩散 1 | 主线强化 1 | 局部验证 52
@@ -55,7 +55,7 @@ This note is the same-day high-priority news watch summary for quick research re
 ## 优先级筛选
 
 新闻批量分类
-- 新闻源文件：data\news\news_batch_20260723.json
+- 新闻源文件：data\news\news_batch_20260724.json
 - 新闻条数：54
 - 影响摘要：风险扩散 1 | 主线强化 1 | 局部验证 52
 - 筛选模式：high-priority-only

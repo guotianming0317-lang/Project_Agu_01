@@ -25,6 +25,7 @@ class AppConfig:
 
 def load_config() -> AppConfig:
     """Load application configuration from environment variables."""
+    _load_local_env_file()
     database_path = Path(
         os.getenv("MONITOR_DATABASE_PATH", BASE_DIR / "data" / "monitor.db")
     )
@@ -46,3 +47,19 @@ def load_config() -> AppConfig:
 def _parse_bool(value: str) -> bool:
     """Parse a small set of truthy environment values."""
     return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _load_local_env_file() -> None:
+    """Load simple KEY=VALUE settings without requiring python-dotenv."""
+    env_path = BASE_DIR / ".env"
+    if not env_path.exists():
+        return
+    for raw_line in env_path.read_text(encoding="utf-8-sig").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        if key and key not in os.environ:
+            os.environ[key] = value

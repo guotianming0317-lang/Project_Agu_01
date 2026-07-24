@@ -118,6 +118,34 @@ class AnnouncementClientTests(unittest.TestCase):
         self.assertEqual([], items)
         self.assertEqual("invalid", status["status"])
 
+    def test_fetch_remote_announcement_items_supports_eastmoney_notice_list(self) -> None:
+        payload = json.dumps(
+            {
+                "data": {
+                    "list": [
+                        {
+                            "title_ch": "半导体公司回购股份公告",
+                            "notice_date": "2026-07-23",
+                            "art_code": "AN202607230001",
+                            "codes": [{"short_name": "示例股份"}],
+                        }
+                    ]
+                }
+            },
+            ensure_ascii=False,
+        )
+
+        items, status = fetch_remote_announcement_items(
+            "https://example.test/eastmoney-announcements",
+            fetch_text=lambda _url: payload,
+        )
+
+        self.assertEqual("ok", status["status"])
+        self.assertEqual("半导体公司回购股份公告", items[0]["title"])
+        self.assertEqual("半导体公司回购股份公告", items[0]["content"])
+        self.assertEqual("示例股份", items[0]["related_stocks"])
+        self.assertIn("AN202607230001", items[0]["source_url"])
+
 
 if __name__ == "__main__":
     unittest.main()

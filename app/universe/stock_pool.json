@@ -514,5 +514,29 @@
     "chain_group": "封测",
     "pool_type": "core",
     "notes": ""
+  },
+  {
+    "code": "688981",
+    "name": "中芯国际",
+    "market": "科创板",
+    "sector": "半导体设备",
+    "monitor_sector": "半导体设备",
+    "sub_sector": "晶圆制造",
+    "priority": 2,
+    "chain_group": "设备",
+    "pool_type": "extended",
+    "notes": "晶圆制造扩展观察"
+  },
+  {
+    "code": "688256",
+    "name": "寒武纪",
+    "market": "科创板",
+    "sector": "AI服务器/算力硬件",
+    "monitor_sector": "AI服务器/算力硬件",
+    "sub_sector": "AI芯片",
+    "priority": 2,
+    "chain_group": "服务器",
+    "pool_type": "extended",
+    "notes": "AI芯片扩展观察"
   }
 ]

@@ -29,4 +29,8 @@ function Get-ProjectPythonCommand {
 }
 
 $pythonCommand = Get-ProjectPythonCommand
+$env:MONITOR_ENABLE_PUSH = "1"
+& $pythonCommand.Exe @($pythonCommand.Args) -m app.main refresh-local-news-feed
+& $pythonCommand.Exe @($pythonCommand.Args) -m app.main refresh-local-announcement-feed
+& $pythonCommand.Exe @($pythonCommand.Args) -m app.main refresh-us-market-summary
 & $pythonCommand.Exe @($pythonCommand.Args) -m app.main start-daily-news-workflow

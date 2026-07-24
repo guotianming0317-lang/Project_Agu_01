@@ -170,6 +170,28 @@ class NewsClientTests(unittest.TestCase):
         self.assertEqual([], items)
         self.assertEqual("invalid", status["status"])
 
+    def test_fetch_remote_news_items_supports_eastmoney_fast_news_envelope(self) -> None:
+        payload = json.dumps(
+            {
+                "data": {
+                    "fastNewsList": [
+                        {
+                            "title": "东方财富快讯",
+                            "summary": "半导体行业订单改善。",
+                            "url": "https://example.test/news/1",
+                        }
+                    ]
+                }
+            },
+            ensure_ascii=False,
+        )
+        items, status = fetch_remote_news_items(
+            "https://example.test/news.json",
+            fetch_text=lambda _url: payload,
+        )
+        self.assertEqual("ok", status["status"])
+        self.assertEqual("https://example.test/news/1", items[0]["source_url"])
+
 
 if __name__ == "__main__":
     unittest.main()

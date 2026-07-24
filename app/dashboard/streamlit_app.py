@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from html import escape
 from importlib import import_module
 
 from app.config import load_config
@@ -32,6 +33,7 @@ from app.dashboard.presentation import (
     build_priority_action_topline_copy_specs,
     build_priority_action_topline_specs,
     build_summary_panel_style_spec,
+    build_semantic_signal_style_spec,
     build_view_variant_specs,
     resolve_dashboard_view_spec,
 )
@@ -2358,10 +2360,13 @@ def _build_health_readiness_markdown(
     readiness_label = str(view_model.get("risk_label", "UNKNOWN")).strip()
     readiness_text = str(view_model.get("risk_text", "")).strip()
     structure_summary = str(view_model.get("structure_summary", "")).strip()
+    extension_summary = str(view_model.get("extension_summary", "")).strip()
     risk_level = str(view_model.get("risk_level", "unknown")).strip().lower()
     body_lines = [f"{readiness_label} | {readiness_text}"]
     if structure_summary:
         body_lines.append(f"Structure: {structure_summary}")
+    if extension_summary:
+        body_lines.append(extension_summary)
     return _build_info_panel_markdown(
         tone=tone,
         label=str(style_spec.get("readiness_label", "readiness")),
@@ -3211,7 +3216,37 @@ def _render_grouped_text_sections(
         else:
             st.write(title)
         for row in list(section_view_model.get("rows", [])):
-            st.write(row)
+            _render_semantic_dashboard_row(st, row)
+
+
+def _render_semantic_dashboard_row(st: object, row: object) -> None:
+    """Color only sentiment keywords while keeping the rest of the row unchanged."""
+    text = str(row)
+    signal_colors = build_semantic_signal_style_spec()
+    if text.startswith("消息倾向："):
+        prefix = "消息倾向："
+        value = text[len(prefix):]
+        if value.startswith("利好"):
+            color = signal_colors["positive"]
+        elif value.startswith("利空"):
+            color = signal_colors["negative"]
+        elif value.startswith("中性"):
+            color = signal_colors["neutral"]
+        else:
+            color = "inherit"
+        st.markdown(
+            f'<div>{escape(prefix)}<strong style="color:{color}">{escape(value)}</strong></div>',
+            unsafe_allow_html=True,
+        )
+        return
+    if text.startswith("利好消息：") or text.startswith("利空消息："):
+        color = signal_colors["positive"] if text.startswith("利好消息：") else signal_colors["negative"]
+        st.markdown(
+            f'<div style="color:{color}">{escape(text)}</div>',
+            unsafe_allow_html=True,
+        )
+        return
+    st.write(row)
 
 
 def _render_info_blocks(
@@ -3230,7 +3265,7 @@ def _render_info_blocks(
             rows = list(content) if isinstance(content, list) else []
             columns = st.columns(2)
             for index, row in enumerate(rows):
-                columns[index % 2].write(row)
+                _render_semantic_dashboard_row(columns[index % 2], row)
             continue
         if block_type == "grouped_text_sections":
             _render_grouped_text_sections(
@@ -3831,6 +3866,7 @@ def _build_health_summary_view_model(
         "risk_label": resolved_risk_label,
         "risk_text": str(value.get("risk_text", "")).strip(),
         "structure_summary": str(value.get("structure_summary", "")).strip(),
+        "extension_summary": str(value.get("extension_summary", "")).strip(),
         "status_line": status_copy["status_line"],
         "badge_text": status_copy["badge_text"],
         "summary_metrics": summary_metrics,

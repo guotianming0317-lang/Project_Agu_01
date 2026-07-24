@@ -121,21 +121,49 @@ def _normalize_announcement_rows(
             continue
         title = _first_non_empty_value(
             item,
-            ("title", "notice_title", "announcementTitle", "name"),
+            ("title", "title_ch", "notice_title", "announcementTitle", "name"),
         )
         content = _first_non_empty_value(
             item,
             ("content", "summary", "notice_content", "announcementContent", "body"),
         )
-        if not title or not content:
+        if not title:
             continue
-        valid_items.append(
-            {
-                "title": title,
-                "content": content,
-                "source": str(item.get("source", default_source)).strip() or default_source,
-            }
+        # Public announcement list endpoints often expose title metadata only;
+        # keep the title as readable content instead of dropping the notice.
+        if not content and not (item.get("title_ch") or item.get("art_code")):
+            continue
+        content = content or title
+        normalized_item = {
+            "title": title,
+            "content": content,
+            "source": str(item.get("source", default_source)).strip() or default_source,
+        }
+        notice_date = _first_non_empty_value(
+            item, ("notice_date", "display_time", "sort_date")
         )
+        if notice_date:
+            normalized_item["published_at"] = notice_date
+        codes = item.get("codes")
+        if isinstance(codes, list):
+            names = [
+                str(code.get("short_name", "")).strip()
+                for code in codes
+                if isinstance(code, dict) and str(code.get("short_name", "")).strip()
+            ]
+            if names:
+                normalized_item["related_stocks"] = "、".join(dict.fromkeys(names))
+        source_url = str(
+            item.get("source_url") or item.get("url") or item.get("link") or ""
+        ).strip()
+        if source_url:
+            normalized_item["source_url"] = source_url
+        elif str(item.get("art_code", "")).strip():
+            normalized_item["source_url"] = (
+                "https://data.eastmoney.com/notices/detail/"
+                f"{str(item['art_code']).strip()}.html"
+            )
+        valid_items.append(normalized_item)
     return valid_items
 
 
