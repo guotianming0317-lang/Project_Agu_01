@@ -571,7 +571,7 @@ def _build_feishu_compact_digest(workflow_report: str) -> str:
             continue
         if in_batch and text == "优先级筛选":
             in_batch = False
-        if in_batch and text[:2].isdigit() and ". " in text[:4]:
+        if in_batch and re.match(r"^\d+\.\s", text):
             batch_titles.append(text)
         if text == "优先级筛选":
             started = True
@@ -581,7 +581,7 @@ def _build_feishu_compact_digest(workflow_report: str) -> str:
         if text.startswith("用法："):
             break
         if (
-            text[:2].isdigit() and ". " in text[:4]
+            re.match(r"^\d+\.\s", text)
             or text.startswith("消息倾向：")
             or text.startswith("级别：")
             or text.startswith("结论：")
