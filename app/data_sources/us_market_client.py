@@ -50,9 +50,10 @@ def fetch_us_market_overview(timeout: int = 5) -> tuple[dict[str, Any] | None, s
     sector_by_name = {name: value for name, value in sectors}
     strong = [_format_sector(name, value) for name, value in sectors[:3]]
     weak = [_format_sector(name, value) for name, value in sectors[-3:][::-1]]
+    session_date = str(indexes["nasdaq"].get("session_date", "")).strip()
     return {
         "status": "ready",
-        "date": datetime.now().strftime("%Y-%m-%d"),
+        "date": session_date or datetime.now().strftime("%Y-%m-%d"),
         "source_name": "Yahoo Finance Chart API",
         "nasdaq": indexes["nasdaq"],
         "sox": indexes["sox"],
@@ -106,12 +107,18 @@ def _fetch_chart(symbol: str, timeout: int) -> dict[str, Any] | None:
     closing = float(closes[-1])
     previous = meta.get("chartPreviousClose")
     change = ((closing - float(previous)) / float(previous) * 100) if previous else 0.0
+    market_time = meta.get("regularMarketTime")
     return {
         "open": _format_price(opening),
         "intraday": _format_price(max(highs) if highs else closing),
         "close": _format_price(closing),
         "change": f"{change:+.2f}%",
         "change_value": change,
+        "session_date": (
+            datetime.fromtimestamp(int(market_time)).strftime("%Y-%m-%d")
+            if market_time
+            else ""
+        ),
         "trend": _trend_text(opening, closing, max(highs) if highs else closing),
     }
 

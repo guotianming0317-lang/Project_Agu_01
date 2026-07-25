@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -42,6 +43,8 @@ def build_us_market_overview_text(payload: dict[str, Any] | None = None) -> str:
 
     lines.append(f"数据日期：{data.get('date', '未提供')}")
     lines.append(f"数据来源：{data.get('source_name', data.get('source', '未提供'))}")
+    if _is_previous_session(data.get("date")):
+        lines.append("数据状态：美股当前休市或尚未开盘，以下沿用最近交易日收盘数据。")
     for key, label in (("nasdaq", "纳斯达克综合指数"), ("sox", "费城半导体指数")):
         index = data.get(key) if isinstance(data.get(key), dict) else {}
         lines.extend([
@@ -66,3 +69,10 @@ def _join_sectors(value: Any) -> str:
     if isinstance(value, list):
         return "、".join(str(item) for item in value) or "暂无"
     return str(value or "暂无")
+
+
+def _is_previous_session(value: Any) -> bool:
+    try:
+        return str(value) < datetime.now().strftime("%Y-%m-%d")
+    except (TypeError, ValueError):
+        return False
